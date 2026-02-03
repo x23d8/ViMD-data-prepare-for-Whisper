@@ -1,11 +1,9 @@
-````markdown
 # 🎧 Audio & Transcript Editor cho ViMD Dataset
 
 Công cụ dựa trên Gradio dùng để xử lý và chỉnh sửa dữ liệu **audio và transcript** được lưu dưới định dạng Parquet, phục vụ cho môn học **DAT301m**, sử dụng bộ dữ liệu **nguyendv02/ViMD_Dataset**.
 
 Công cụ hỗ trợ chuẩn bị dữ liệu cho các mô hình nhận dạng giọng nói như **Whisper**, vốn chỉ hỗ trợ audio đầu vào có thời lượng tối đa **30 giây**.
 
----
 
 ## 📌 Tổng quan
 
@@ -17,7 +15,6 @@ Trong bộ dữ liệu ViMD, một số file audio có thời lượng vượt q
 
 Mục tiêu là hỗ trợ chuẩn bị dữ liệu huấn luyện một cách thuận tiện, đồng thời vẫn cho phép người dùng chỉnh sửa khi cần thiết.
 
----
 
 ## 🎯 Tính năng chính
 
@@ -47,7 +44,6 @@ Mục tiêu là hỗ trợ chuẩn bị dữ liệu huấn luyện một cách t
 - Giữ nguyên dữ liệu gốc
 - Tự động tạo thư mục lưu dữ liệu chỉnh sửa
 
----
 
 ## 📦 Cài đặt
 
@@ -57,7 +53,6 @@ Cài đặt các thư viện cần thiết:
 pip install -r requirements.txt
 ````
 
----
 
 ## 🚀 Cách sử dụng
 
