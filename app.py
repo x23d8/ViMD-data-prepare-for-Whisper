@@ -31,7 +31,6 @@ class AudioEditorApp:
         self.current_index = 0
         self.modified_indices = set()
         self.loaded = False
-        # Track original audio and text for each row using unique IDs
         self.original_data = {}  # Maps row_id -> {'audio': bytes, 'text': str}
         self.next_row_id = 0
         
@@ -40,10 +39,8 @@ class AudioEditorApp:
         import pyarrow.parquet as pq
         
         if selected_files is None or len(selected_files) == 0:
-            # Load all files if none specified
             parquet_files = sorted(glob.glob(str(self.data_dir / "long_audio" / "*.parquet")))
         else:
-            # Load only selected files
             parquet_files = [str(self.data_dir / "long_audio" / f) for f in selected_files]
         
         if not parquet_files:
@@ -54,7 +51,6 @@ class AudioEditorApp:
         for file in parquet_files:
             print(f"Loading {Path(file).name}...")
             
-            # Use ParquetFile with iter_batches to handle nested data
             parquet_file = pq.ParquetFile(file)
             total_rows = parquet_file.metadata.num_rows
             print(f"  Total rows: {total_rows}")
@@ -271,26 +267,20 @@ class AudioEditorApp:
         if index < 0 or index >= len(self.df):
             return index
         
-        # Remove the row
         self.df = self.df.drop(self.df.index[index]).reset_index(drop=True)
         
-        # Update modified indices - shift all indices after the deletion point
         new_modified_indices = set()
         for idx in self.modified_indices:
             if idx < index:
                 new_modified_indices.add(idx)
             elif idx > index:
                 new_modified_indices.add(idx - 1)
-            # If idx == index, it's deleted, so don't add it
         self.modified_indices = new_modified_indices
         
-        # Mark as modified (deletion is a modification)
-        # We'll track this by ensuring the dataset is marked as having changes
+
         if len(self.df) > 0:
-            # Mark the previous index as modified to ensure save happens
             self.modified_indices.add(max(0, index - 1))
         
-        # Return the new current index (stay at same position, which is now the next item)
         new_index = min(index, len(self.df) - 1) if len(self.df) > 0 else 0
         return new_index
     
@@ -333,7 +323,7 @@ app = None
 def init_app():
     global app
     if app is None:
-        app = AudioEditorApp(".")
+        app = AudioEditorApp("data")
     return app
 
 def load_files_handler(selected_files):
@@ -344,8 +334,7 @@ def load_files_handler(selected_files):
         return "❌ Vui lòng chọn ít nhất một file để load", gr.update(visible=False), "", "", None, None, 0, 10000, 0
     
     try:
-        # Create new app instance
-        app = AudioEditorApp(".")
+        app = AudioEditorApp("data")
         app.load_data(selected_files)
         
         # Load first sample
@@ -463,7 +452,7 @@ with gr.Blocks(title="Audio & Transcript Editor", theme=gr.themes.Soft()) as dem
             gr.Markdown("### 📁 Chọn File để Load")
             
             # Get available files
-            available_files = get_available_files(".")
+            available_files = get_available_files("data")
             file_choices = [display_name for display_name, _ in available_files]
             file_values = [file_name for _, file_name in available_files]
             

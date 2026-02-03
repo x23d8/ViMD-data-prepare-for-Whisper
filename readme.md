@@ -1,101 +1,159 @@
-# Introduction
+````markdown
+# 🎧 Audio & Transcript Editor cho ViMD Dataset
 
+Một công cụ dựa trên Gradio dùng để xử lý và chỉnh sửa dữ liệu **audio và transcript** được lưu dưới định dạng Parquet, phục vụ cho môn học **DAT301m**, sử dụng bộ dữ liệu **nguyendv02/ViMD_Dataset**.
 
-This is a tool for data processing in the DAT301m with the dataset:nguyendv02/ViMD_Dataset
-# Audio & Transcript Editor
+Công cụ hỗ trợ chuẩn bị dữ liệu cho các mô hình nhận dạng giọng nói như **Whisper**, vốn chỉ hỗ trợ audio đầu vào có thời lượng tối đa **30 giây**.
 
-A Gradio application for editing audio and text transcripts stored in a Parquet file.
-# Purpose of this repo 
-As the Whisper model currently supports input audio with a maximum duration of 30 seconds, some audio samples in the ViMD dataset do not meet this requirement. To address this issue, this repository provides a tool to automatically identify and separate audio files exceeding the limit from the original dataset and store them in a separate location.
+---
 
-For users who wish to retain these longer audio samples, the included app.py application allows manual audio trimming and transcript editing to make them compatible with the model. However, this process requires user interaction to ensure proper segmentation and transcript adjustment.
+## 📌 Tổng quan
 
+Trong bộ dữ liệu ViMD, một số file audio có thời lượng vượt quá giới hạn 30 giây của Whisper. Repository này cung cấp:
 
-## Features
+1. Công cụ **tự động phát hiện và tách audio dài** khỏi bộ dữ liệu gốc.
+2. Một giao diện chỉnh sửa cho phép **cắt audio và chỉnh sửa transcript thủ công**.
+3. Quy trình chỉnh sửa **không làm thay đổi dữ liệu gốc**.
 
-### 📝 Text Editing
+Mục tiêu là hỗ trợ chuẩn bị dữ liệu huấn luyện một cách thuận tiện, đồng thời vẫn cho phép người dùng chỉnh sửa khi cần thiết.
 
-* View and edit transcripts
-* Display metadata (region, province, speaker ID, gender)
-* Restore original text
-* Save text changes
+---
 
-### 🎵 Audio Editing
+## 🎯 Tính năng chính
 
-* Play both the current and original audio
-* Trim audio using time ranges (milliseconds)
-* Restore original audio
-* Save audio changes
+### 📝 Chỉnh sửa Transcript
+- Xem và chỉnh sửa nội dung transcript
+- Hiển thị metadata:
+  - Region
+  - Province
+  - Speaker ID
+  - Gender
+- Khôi phục văn bản gốc
+- Lưu thay đổi văn bản
 
-### 🔄 Navigation
+### 🎵 Chỉnh sửa Audio
+- Phát audio gốc và audio đã chỉnh sửa
+- Cắt audio theo khoảng thời gian (milliseconds)
+- Khôi phục audio ban đầu
+- Lưu audio sau khi chỉnh sửa
 
-* Move between samples
-* Display the current sample index
-* Mark edited samples
+### 🔄 Điều hướng dữ liệu
+- Di chuyển giữa các mẫu dữ liệu
+- Hiển thị chỉ số mẫu hiện tại
+- Đánh dấu các mẫu đã chỉnh sửa
 
-### 💾 Saving
+### 💾 Lưu dữ liệu
+- Lưu tất cả thay đổi vào file Parquet mới
+- Giữ nguyên dữ liệu gốc
+- Tự động tạo thư mục lưu dữ liệu chỉnh sửa
 
-* Save all changes to a new Parquet file
-* Preserve the original file structure
-* Automatically create a `data_edited` directory for edited files
+---
 
-## Installation
+## 📦 Cài đặt
+
+Cài đặt các thư viện cần thiết:
 
 ```bash
 pip install -r requirements.txt
-```
+````
 
-## Usage
+---
+
+## 🚀 Cách sử dụng
+
+Khởi chạy ứng dụng:
 
 ```bash
 python app.py
 ```
 
-The application will open at:
-[http://localhost:7860](http://localhost:7860)
+Sau khi chạy, giao diện sẽ mở tại:
 
-## User Guide
-0. **Data prepare**: 
-   * In the "prepare.ipynb" contains download and data pre-processing method
-   * After run all the notebook the data will clean all the audio which have >30s lenngth 
-   * The cleaned data will contain in the data folder. The processed data in the long_audio -> this is also the place app.py scan the data in app. After edit the data will be stored at the long_audio_edited
-   
-
-1. **View samples**: The first sample loads automatically when the app starts.
-2. **Navigation**: Use "⬅️ Previous Sample" and "Next Sample ➡️" to move between samples.
-3. **Edit text**:
-
-   * Modify the text directly in the editor.
-   * Click "💾 Save Text" to save changes.
-   * Click "↺ Restore Text" to revert to the original transcript.
-4. **Trim audio**:
-
-   * Play the audio to identify the segment you want.
-   * Adjust the "Start Time" and "End Time" sliders.
-   * Click "✂️ Trim Audio" to apply trimming.
-   * Click "↺ Restore Audio" to revert to the original audio.
-5. **Save all changes**: Click "💾 SAVE ALL CHANGES" when editing is complete.
-
-
-## Data Structure
-
-The app supports Parquet files with the following columns:
-
-* `region`: Region
-* `province_code`: Province code
-* `province_name`: Province name
-* `filename`: Original file name
-* `text`: Transcript text
-* `speakerID`: Speaker ID
-* `gender`: Gender (1: Male, 0: Female)
-* `audio`: Audio stored as WAV bytes
-
-## Notes
-
-* The original file is never modified.
-* Edited files are saved in the `data_edited/` directory.
-* Output files include the suffix `_edited.parquet`.
-* Audio must be stored in WAV format within the Parquet file.
+```
+http://localhost:7860
+```
 
 ---
+
+## 🧭 Quy trình sử dụng
+
+### Bước 0 — Chuẩn bị dữ liệu
+
+* Notebook `prepare.ipynb` chứa các bước tải và tiền xử lý dữ liệu.
+* Các audio dài hơn 30 giây sẽ được tách ra.
+* Dữ liệu sạch được lưu trong thư mục `data/`.
+* Các audio dài được lưu trong `long_audio/`.
+* Sau khi chỉnh sửa, dữ liệu được lưu trong `long_audio_edited/`.
+
+### Bước 1 — Xem mẫu dữ liệu
+
+Mẫu đầu tiên được tải tự động khi ứng dụng khởi động.
+
+### Bước 2 — Di chuyển giữa các mẫu
+
+Sử dụng:
+
+* `⬅️ Previous Sample`
+* `Next Sample ➡️`
+
+để chuyển đổi giữa các mẫu dữ liệu.
+
+### Bước 3 — Chỉnh sửa transcript
+
+* Chỉnh sửa nội dung trực tiếp.
+* Nhấn **Save Text** để lưu thay đổi.
+* Nhấn **Restore Text** để quay về nội dung gốc.
+
+### Bước 4 — Cắt audio
+
+* Phát audio để xác định đoạn cần giữ.
+* Điều chỉnh thời gian bắt đầu và kết thúc.
+* Nhấn **Trim Audio** để cắt.
+* Có thể khôi phục audio gốc nếu cần.
+
+### Bước 5 — Lưu toàn bộ thay đổi
+
+Nhấn **SAVE ALL CHANGES** khi hoàn tất chỉnh sửa.
+
+---
+
+## 🗂 Định dạng dữ liệu hỗ trợ
+
+File Parquet cần chứa các cột:
+
+| Cột           | Mô tả                         |
+| ------------- | ----------------------------- |
+| region        | Vùng miền                     |
+| province_code | Mã tỉnh/thành                 |
+| province_name | Tên tỉnh/thành                |
+| filename      | Tên file gốc                  |
+| text          | Transcript                    |
+| speakerID     | ID người nói                  |
+| gender        | 1 = Nam, 0 = Nữ               |
+| audio         | Audio WAV lưu dưới dạng bytes |
+
+---
+
+## 📁 Cơ chế lưu dữ liệu
+
+* File dữ liệu gốc **không bị thay đổi**.
+* File chỉnh sửa được lưu trong thư mục `data_edited/`.
+* File đầu ra có hậu tố `_edited.parquet`.
+
+---
+
+## ⚠ Lưu ý
+
+* Audio phải ở định dạng WAV trong file Parquet.
+* Việc chỉnh sửa thủ công giúp đảm bảo transcript khớp với nội dung audio.
+* Công cụ được thiết kế cho mục đích tiền xử lý dữ liệu.
+
+---
+
+## 📚 Mục đích sử dụng
+
+* Chuẩn bị dữ liệu cho Whisper
+* Làm sạch dữ liệu giọng nói
+* Hiệu chỉnh transcript
+* Cắt và chuẩn hóa audio
 
