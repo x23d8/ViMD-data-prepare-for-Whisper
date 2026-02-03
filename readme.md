@@ -1,45 +1,57 @@
-# Introduction
+````markdown
+# 🎧 Audio & Transcript Editor cho ViMD Dataset
 
+Công cụ dựa trên Gradio dùng để xử lý và chỉnh sửa dữ liệu **audio và transcript** được lưu dưới định dạng Parquet, phục vụ cho môn học **DAT301m**, sử dụng bộ dữ liệu **nguyendv02/ViMD_Dataset**.
 
-This is a tool for data processing in the DAT301m with the dataset:nguyendv02/ViMD_Dataset
-# Audio & Transcript Editor
+Công cụ hỗ trợ chuẩn bị dữ liệu cho các mô hình nhận dạng giọng nói như **Whisper**, vốn chỉ hỗ trợ audio đầu vào có thời lượng tối đa **30 giây**.
 
-A Gradio application for editing audio and text transcripts stored in a Parquet file.
-# Purpose of this repo 
-As the Whisper model currently supports input audio with a maximum duration of 30 seconds, some audio samples in the ViMD dataset do not meet this requirement. To address this issue, this repository provides a tool to automatically identify and separate audio files exceeding the limit from the original dataset and store them in a separate location.
+---
 
-For users who wish to retain these longer audio samples, the included app.py application allows manual audio trimming and transcript editing to make them compatible with the model. However, this process requires user interaction to ensure proper segmentation and transcript adjustment.
+## 📌 Tổng quan
 
+Trong bộ dữ liệu ViMD, một số file audio có thời lượng vượt quá giới hạn 30 giây của Whisper. Repository này cung cấp:
 
-## Features
+1. Công cụ **tự động phát hiện và tách audio dài** khỏi bộ dữ liệu gốc.
+2. Một giao diện chỉnh sửa cho phép **cắt audio và chỉnh sửa transcript thủ công**.
+3. Quy trình chỉnh sửa **không làm thay đổi dữ liệu gốc**.
 
-### 📝 Text Editing
+Mục tiêu là hỗ trợ chuẩn bị dữ liệu huấn luyện một cách thuận tiện, đồng thời vẫn cho phép người dùng chỉnh sửa khi cần thiết.
 
-* View and edit transcripts
-* Display metadata (region, province, speaker ID, gender)
-* Restore original text
-* Save text changes
+---
 
-### 🎵 Audio Editing
+## 🎯 Tính năng chính
 
-* Play both the current and original audio
-* Trim audio using time ranges (milliseconds)
-* Restore original audio
-* Save audio changes
+### 📝 Chỉnh sửa Transcript
+- Xem và chỉnh sửa nội dung transcript
+- Hiển thị metadata:
+  - Region
+  - Province
+  - Speaker ID
+  - Gender
+- Khôi phục văn bản gốc
+- Lưu thay đổi văn bản
 
-### 🔄 Navigation
+### 🎵 Chỉnh sửa Audio
+- Phát audio gốc và audio đã chỉnh sửa
+- Cắt audio theo khoảng thời gian (milliseconds)
+- Khôi phục audio ban đầu
+- Lưu audio sau khi chỉnh sửa
 
-* Move between samples
-* Display the current sample index
-* Mark edited samples
+### 🔄 Điều hướng dữ liệu
+- Di chuyển giữa các mẫu dữ liệu
+- Hiển thị chỉ số mẫu hiện tại
+- Đánh dấu các mẫu đã chỉnh sửa
 
-### 💾 Saving
+### 💾 Lưu dữ liệu
+- Lưu tất cả thay đổi vào file Parquet mới
+- Giữ nguyên dữ liệu gốc
+- Tự động tạo thư mục lưu dữ liệu chỉnh sửa
 
-* Save all changes to a new Parquet file
-* Preserve the original file structure
-* Automatically create a `data_edited` directory for edited files
+---
 
-## Installation
+## 📦 Cài đặt
+
+Cài đặt các thư viện cần thiết:
 
 ```bash
 pip install -r requirements.txt
