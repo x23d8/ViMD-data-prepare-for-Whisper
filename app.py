@@ -8,18 +8,27 @@ import tempfile
 import os
 from typing import Dict, List, Tuple, Optional
 import glob
-
-def get_available_files(data_dir: str = ".") -> List[Tuple[str, str]]:
-    """Get list of available parquet files with their sizes"""
-    data_path = Path(data_dir) / "long_audio"
+def get_available_files(folder_path: str = None) -> List[Tuple[str, str]]:
+    """Get list of available parquet files with their sizes from the specified folder"""
+    if folder_path is None or folder_path == "":
+        return []
+    
+    data_path = Path(folder_path)
+    if not data_path.exists():
+        return []
+    
     parquet_files = sorted(glob.glob(str(data_path / "*.parquet")))
     
     file_info = []
     for file_path in parquet_files:
         file_name = Path(file_path).name
-        file_size = os.path.getsize(file_path)
-        size_mb = file_size / (1024 * 1024)
-        file_info.append((f"{file_name} ({size_mb:.1f} MB)", file_name))
+        try:
+            file_size = os.path.getsize(file_path)
+            size_mb = file_size / (1024 * 1024)
+            file_info.append((f"{file_name} ({size_mb:.1f} MB)", file_path))
+        except Exception as e:
+            print(f"Error getting size for {file_path}: {e}")
+            continue
     
     return file_info
 
@@ -35,16 +44,17 @@ class AudioEditorApp:
         self.next_row_id = 0
         
     def load_data(self, selected_files: List[str] = None):
-        """Load selected parquet files from the long_audio directory"""
+        """Load selected parquet files from their full paths"""
         import pyarrow.parquet as pq
         
         if selected_files is None or len(selected_files) == 0:
-            parquet_files = sorted(glob.glob(str(self.data_dir / "long_audio" / "*.parquet")))
-        else:
-            parquet_files = [str(self.data_dir / "long_audio" / f) for f in selected_files]
+            raise ValueError("No files selected to load")
+        
+        # selected_files now contains full paths
+        parquet_files = selected_files
         
         if not parquet_files:
-            raise ValueError(f"No parquet files found in {self.data_dir / 'long_audio'}")
+            raise ValueError(f"No parquet files found")
         
         print(f"Loading {len(parquet_files)} parquet files...")
         dfs = []
@@ -293,7 +303,7 @@ class AudioEditorApp:
         source_files = self.df['source_file'].unique()
         saved_files = []
         
-        output_dir = self.data_dir / "long_audio_edited"
+        output_dir = self.data_dir / "test_audio_edited"
         output_dir.mkdir(exist_ok=True)
         
         for source_file in source_files:
@@ -327,14 +337,14 @@ def init_app():
     return app
 
 def load_files_handler(selected_files):
-    """Handle loading selected files"""
+    """Handle loading selected files with full paths"""
     global app
     
     if not selected_files or len(selected_files) == 0:
         return "❌ Vui lòng chọn ít nhất một file để load", gr.update(visible=False), "", "", None, None, 0, 10000, 0
     
     try:
-        app = AudioEditorApp("data")
+        app = AudioEditorApp(".")  # data_dir is not used anymore
         app.load_data(selected_files)
         
         # Load first sample
@@ -344,7 +354,7 @@ def load_files_handler(selected_files):
         return (message, gr.update(visible=True)) + first_sample
     except Exception as e:
         import traceback
-        error_msg = f"❌ Lỗi khi load file: {str(e)}\n{traceback.format_exc()}"
+        error_msg = f"❌ Lỗi khi load file: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
         return error_msg, gr.update(visible=False), "", "", None, None, 0, 10000, 0
 
 def load_sample(index: int):
@@ -449,19 +459,26 @@ with gr.Blocks(title="Audio & Transcript Editor", theme=gr.themes.Soft()) as dem
     # File Selection Section
     with gr.Row():
         with gr.Column():
-            gr.Markdown("### 📁 Chọn File để Load")
+            gr.Markdown("### 📁 Chọn Thư Mục và File để Load")
             
-            # Get available files
-            available_files = get_available_files("data")
-            file_choices = [display_name for display_name, _ in available_files]
-            file_values = [file_name for _, file_name in available_files]
+            # Folder path input
+            folder_path = gr.Textbox(
+                label="Đường dẫn thư mục chứa file parquet",
+                placeholder="Ví dụ: data/test_edited hoặc D:/SPL/Code/PhanBietVungMien/DAT301m/data/test_edited",
+                value="data/test_edited",
+                info="Nhập đường dẫn tuyệt đối hoặc tương đối đến thư mục chứa file .parquet"
+            )
             
+            with gr.Row():
+                browse_btn = gr.Button("🔍 Tìm File trong Thư Mục", variant="secondary", size="sm")
+            
+            # File selector (will be populated after browsing)
             file_selector = gr.Dropdown(
-                choices=file_choices,
+                choices=[],
                 value=None,
                 multiselect=True,
                 label="Chọn file parquet (có thể chọn nhiều file)",
-                info=f"Có {len(available_files)} file trong thư mục long_audio"
+                info="Nhấn 'Tìm File trong Thư Mục' để tải danh sách file"
             )
             
             with gr.Row():
@@ -469,9 +486,9 @@ with gr.Blocks(title="Audio & Transcript Editor", theme=gr.themes.Soft()) as dem
             
             load_status = gr.Textbox(
                 label="Trạng thái",
-                value="Chưa load file nào. Vui lòng chọn file và nhấn 'Load File Đã Chọn'",
+                value="Chưa load file nào. Vui lòng nhập đường dẫn thư mục, tìm file và nhấn 'Load File Đã Chọn'",
                 interactive=False,
-                lines=2
+                lines=3
             )
     
     # Hidden state to track current index
@@ -547,21 +564,65 @@ with gr.Blocks(title="Audio & Transcript Editor", theme=gr.themes.Soft()) as dem
     
     # Event handlers
     
-    # Map display names back to file names for loading
-    def map_selected_files(selected_display_names):
-        if not selected_display_names:
-            return []
-        file_map = {display: fname for display, fname in available_files}
-        return [file_map[display] for display in selected_display_names if display in file_map]
+    # Function to browse folder and get files
+    def browse_folder(folder_path_input):
+        """Browse folder and return available files"""
+        if not folder_path_input or folder_path_input.strip() == "":
+            return gr.update(choices=[], value=None), "❌ Vui lòng nhập đường dẫn thư mục"
+        
+        try:
+            available_files = get_available_files(folder_path_input)
+            
+            if len(available_files) == 0:
+                return gr.update(choices=[], value=None), f"❌ Không tìm thấy file .parquet nào trong thư mục: {folder_path_input}"
+            
+            # Extract display names and file paths
+            file_choices = [display_name for display_name, _ in available_files]
+            
+            message = f"✅ Tìm thấy {len(available_files)} file trong thư mục: {folder_path_input}"
+            return gr.update(choices=file_choices, value=None), message
+        except Exception as e:
+            return gr.update(choices=[], value=None), f"❌ Lỗi khi đọc thư mục: {str(e)}"
+    
+    # Store the file mapping globally for the session
+    file_mapping = {}
+    
+    def update_file_mapping(folder_path_input):
+        """Update the global file mapping"""
+        global file_mapping
+        available_files = get_available_files(folder_path_input)
+        file_mapping = {display: full_path for display, full_path in available_files}
     
     # Load button handler
-    def load_and_show(selected_display_names):
-        selected_files = map_selected_files(selected_display_names)
+    def load_and_show(selected_display_names, folder_path_input):
+        """Load selected files using their full paths"""
+        if not selected_display_names or len(selected_display_names) == 0:
+            return "❌ Vui lòng chọn ít nhất một file để load", gr.update(visible=False), "", "", None, None, 0, 10000, 0
+        
+        # Update file mapping first
+        update_file_mapping(folder_path_input)
+        
+        # Map display names to full paths
+        selected_files = []
+        for display_name in selected_display_names:
+            if display_name in file_mapping:
+                selected_files.append(file_mapping[display_name])
+        
+        if len(selected_files) == 0:
+            return "❌ Không tìm thấy file được chọn", gr.update(visible=False), "", "", None, None, 0, 10000, 0
+        
         return load_files_handler(selected_files)
+    
+    # Browse button event
+    browse_btn.click(
+        fn=browse_folder,
+        inputs=[folder_path],
+        outputs=[file_selector, load_status]
+    )
     
     load_btn.click(
         fn=load_and_show,
-        inputs=[file_selector],
+        inputs=[file_selector, folder_path],
         outputs=[load_status, editing_interface, metadata_display, text_editor, audio_player, original_audio, start_time, end_time, current_index_state]
     )
     

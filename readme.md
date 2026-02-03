@@ -77,7 +77,7 @@ http://localhost:7860
 * Notebook `prepare.ipynb` chứa các bước tải và tiền xử lý dữ liệu.
 * Các audio dài hơn 30 giây sẽ được tách ra.
 * Dữ liệu sạch được lưu trong thư mục `data/`.
-* Các audio dài được lưu trong `long_audio/`.
+* Các audio dài được lưu trong `long_audio/`. -> ở đây có thể chỉnh lại ở `parquet_files = glob.glob(os.path.join(data_dir, "test*"))` trong `prepare.ipynb`nếu chỉ muốn xử lý 1 tập cụ thể
 * Sau khi chỉnh sửa, dữ liệu được lưu trong `long_audio_edited/`.
 
 ### Bước 1 — Xem mẫu dữ liệu
