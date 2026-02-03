@@ -6,7 +6,7 @@ This is a tool for data processing in the DAT301m with the dataset:nguyendv02/Vi
 
 A Gradio application for editing audio and text transcripts stored in a Parquet file.
 ## Purpose of this repo 
-As the Whisper model currently supports input audio with a maximum duration of 30 seconds, some audio samples in the ViMD dataset do not meet this requirement. To address this issue, this repository provides a tool to automatically identify and separate audio files exceeding the limit from the original dataset and store them in a separate location.
+As the Whisper model currently supports input audio with a maximum duration of 30 seconds, some audio samples in the [ViMD](nguyendv02/ViMD_Dataset) dataset do not meet this requirement. To address this issue, this repository provides a tool to automatically identify and separate audio files exceeding the limit from the original dataset and store them in a separate location.
 
 For users who wish to retain these longer audio samples, the included app.py application allows manual audio trimming and transcript editing to make them compatible with the model. However, this process requires user interaction to ensure proper segmentation and transcript adjustment.
 
