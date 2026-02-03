@@ -43,7 +43,7 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python audio_editor_app.py
+python app.py
 ```
 
 The application will open at:
@@ -53,7 +53,7 @@ The application will open at:
 0. **Data prepare**: 
    * In the "prepare.ipynb" contains download and data pre-processing method
    * After run all the notebook the data will clean all the audio which have >30s lenngth 
-   * The cleaned data will contain in the data folder. The processed data in the long_audio. After edit the data will be stored at the long_audio_edited
+   * The cleaned data will contain in the data folder. The processed data in the long_audio -> this is also the place app.py scan the data in app. After edit the data will be stored at the long_audio_edited
    
 
 1. **View samples**: The first sample loads automatically when the app starts.
